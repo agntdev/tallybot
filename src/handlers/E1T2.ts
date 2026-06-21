@@ -1,9 +1,8 @@
 import { Composer } from "grammy";
 import type { Ctx } from "../bot.js";
-import { counterStore } from "../counter-store.js";
+import { counterStore, isValidCounterName } from "../counter-store.js";
 
 const COUNTER_PREFIX = "counter:";
-const NAME_RE = /^[a-zA-Z0-9_-]+$/;
 
 const composer = new Composer<Ctx>();
 
@@ -19,7 +18,7 @@ composer.command("inc", async (ctx) => {
   const name = parts[0];
   const nStr = parts[1];
 
-  if (!NAME_RE.test(name)) {
+  if (!isValidCounterName(name)) {
     await ctx.reply(
       "Invalid counter name. Use letters, numbers, hyphens, and underscores.",
     );
