@@ -19,7 +19,7 @@ function storage(): StorageAdapter<CounterEntry> {
 }
 
 function isValidName(name: string): boolean {
-  return /^[a-zA-Z0-9_]+$/.test(name.trim());
+  return /^[a-zA-Z0-9_-]+$/.test(name.trim());
 }
 
 function key(name: string): string {
@@ -43,7 +43,7 @@ export interface CounterResult {
 export async function createCounter(name: string): Promise<CounterResult> {
   const trimmed = name.trim();
   if (!trimmed) return { ok: false, error: "Usage: /new <name>" };
-  if (!isValidName(trimmed)) return { ok: false, error: "Invalid counter name. Use only letters, numbers, and underscores." };
+  if (!isValidName(trimmed)) return { ok: false, error: "Invalid counter name. Use only letters, numbers, hyphens, and underscores." };
   const s = storage();
   const existing = await s.read(key(trimmed));
   if (existing !== undefined) return { ok: false, error: `Counter '${trimmed}' already exists.` };
@@ -63,7 +63,7 @@ export async function getCounter(name: string): Promise<CounterResult> {
 export async function incrementCounter(name: string, delta: number): Promise<CounterResult> {
   const trimmed = name.trim();
   if (!trimmed) return { ok: false, error: "Usage: /inc <name> [n]" };
-  if (!isValidName(trimmed)) return { ok: false, error: "Invalid counter name. Use only letters, numbers, and underscores." };
+  if (!isValidName(trimmed)) return { ok: false, error: "Invalid counter name. Use only letters, numbers, hyphens, and underscores." };
   const s = storage();
   const entry = await s.read(key(trimmed));
   if (entry === undefined) return { ok: false, error: `Counter '${trimmed}' not found.` };
@@ -75,7 +75,7 @@ export async function incrementCounter(name: string, delta: number): Promise<Cou
 export async function resetCounter(name: string): Promise<CounterResult> {
   const trimmed = name.trim();
   if (!trimmed) return { ok: false, error: "Usage: /reset <name>" };
-  if (!isValidName(trimmed)) return { ok: false, error: "Invalid counter name. Use only letters, numbers, and underscores." };
+  if (!isValidName(trimmed)) return { ok: false, error: "Invalid counter name. Use only letters, numbers, hyphens, and underscores." };
   const s = storage();
   const entry = await s.read(key(trimmed));
   if (entry === undefined) return { ok: false, error: `Counter '${trimmed}' not found.` };
@@ -134,7 +134,7 @@ export async function countUserCounters(userId: number): Promise<number> {
 
 export async function createUserCounter(name: string, userId: number): Promise<CounterResult> {
   if (!name) return { ok: false, error: "Usage: /new <name>" };
-  if (!isValidName(name)) return { ok: false, error: "Invalid counter name. Use only letters, numbers, and underscores." };
+  if (!isValidName(name)) return { ok: false, error: "Invalid counter name. Use only letters, numbers, hyphens, and underscores." };
   const existingCount = await countUserCounters(userId);
   if (existingCount >= MAX_COUNTERS_PER_USER) {
     return { ok: false, error: `Counter limit reached. You have ${existingCount} counters (maximum ${MAX_COUNTERS_PER_USER}).` };
