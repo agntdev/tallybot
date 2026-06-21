@@ -17,7 +17,7 @@ function storage(): StorageAdapter<CounterEntry> {
 }
 
 function isValidName(name: string): boolean {
-  return /^[a-zA-Z0-9_]+$/.test(name);
+  return /^[a-zA-Z0-9_]+$/.test(name.trim());
 }
 
 function key(name: string): string {
@@ -31,49 +31,55 @@ export interface CounterResult {
 }
 
 export async function createCounter(name: string): Promise<CounterResult> {
-  if (!name) return { ok: false, error: "Usage: /new <name>" };
-  if (!isValidName(name)) return { ok: false, error: "Invalid counter name. Use only letters, numbers, and underscores." };
+  const trimmed = name.trim();
+  if (!trimmed) return { ok: false, error: "Usage: /new <name>" };
+  if (!isValidName(trimmed)) return { ok: false, error: "Invalid counter name. Use only letters, numbers, and underscores." };
   const s = storage();
-  const existing = await s.read(key(name));
-  if (existing !== undefined) return { ok: false, error: `Counter '${name}' already exists.` };
-  await s.write(key(name), { value: 0 });
+  const existing = await s.read(key(trimmed));
+  if (existing !== undefined) return { ok: false, error: `Counter '${trimmed}' already exists.` };
+  await s.write(key(trimmed), { value: 0 });
   return { ok: true, value: 0 };
 }
 
 export async function getCounter(name: string): Promise<CounterResult> {
+  const trimmed = name.trim();
+  if (!trimmed) return { ok: false, error: "Usage: /get <name>" };
   const s = storage();
-  const entry = await s.read(key(name));
-  if (entry === undefined) return { ok: false, error: `Counter '${name}' not found.` };
+  const entry = await s.read(key(trimmed));
+  if (entry === undefined) return { ok: false, error: `Counter '${trimmed}' not found.` };
   return { ok: true, value: entry.value };
 }
 
 export async function incrementCounter(name: string, delta: number): Promise<CounterResult> {
-  if (!name) return { ok: false, error: "Usage: /inc <name> [n]" };
-  if (!isValidName(name)) return { ok: false, error: "Invalid counter name. Use only letters, numbers, and underscores." };
+  const trimmed = name.trim();
+  if (!trimmed) return { ok: false, error: "Usage: /inc <name> [n]" };
+  if (!isValidName(trimmed)) return { ok: false, error: "Invalid counter name. Use only letters, numbers, and underscores." };
   const s = storage();
-  const entry = await s.read(key(name));
-  if (entry === undefined) return { ok: false, error: `Counter '${name}' not found.` };
+  const entry = await s.read(key(trimmed));
+  if (entry === undefined) return { ok: false, error: `Counter '${trimmed}' not found.` };
   const newValue = entry.value + delta;
-  await s.write(key(name), { value: newValue });
+  await s.write(key(trimmed), { value: newValue });
   return { ok: true, value: newValue };
 }
 
 export async function resetCounter(name: string): Promise<CounterResult> {
-  if (!name) return { ok: false, error: "Usage: /reset <name>" };
-  if (!isValidName(name)) return { ok: false, error: "Invalid counter name. Use only letters, numbers, and underscores." };
+  const trimmed = name.trim();
+  if (!trimmed) return { ok: false, error: "Usage: /reset <name>" };
+  if (!isValidName(trimmed)) return { ok: false, error: "Invalid counter name. Use only letters, numbers, and underscores." };
   const s = storage();
-  const entry = await s.read(key(name));
-  if (entry === undefined) return { ok: false, error: `Counter '${name}' not found.` };
-  await s.write(key(name), { value: 0 });
+  const entry = await s.read(key(trimmed));
+  if (entry === undefined) return { ok: false, error: `Counter '${trimmed}' not found.` };
+  await s.write(key(trimmed), { value: 0 });
   return { ok: true, value: 0 };
 }
 
 export async function deleteCounter(name: string): Promise<CounterResult> {
-  if (!name) return { ok: false, error: "Usage: /delete <name>" };
+  const trimmed = name.trim();
+  if (!trimmed) return { ok: false, error: "Usage: /delete <name>" };
   const s = storage();
-  const entry = await s.read(key(name));
-  if (entry === undefined) return { ok: false, error: `Counter '${name}' not found.` };
-  await s.write(key(name), undefined as unknown as CounterEntry);
+  const entry = await s.read(key(trimmed));
+  if (entry === undefined) return { ok: false, error: `Counter '${trimmed}' not found.` };
+  await s.write(key(trimmed), undefined as unknown as CounterEntry);
   return { ok: true, value: 0 };
 }
 

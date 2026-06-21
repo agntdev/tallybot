@@ -1,0 +1,68 @@
+[
+  {
+    "name": "/checkname without args shows usage",
+    "steps": [
+      {
+        "send": { "text": "/checkname" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Usage: /checkname <name>\n\nValidate a counter name. Names must contain only letters, numbers, and underscores." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/checkname with valid name",
+    "steps": [
+      {
+        "send": { "text": "/checkname my_counter" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "\"my_counter\" is a valid counter name." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/checkname trims whitespace on valid name",
+    "steps": [
+      {
+        "send": { "text": "/checkname  hello  " },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "\"hello\" is a valid counter name." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/checkname rejects invalid characters",
+    "steps": [
+      {
+        "send": { "text": "/checkname bad name" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Invalid counter name \"bad name\". Use only letters, numbers, and underscores." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/checkname rejects special characters",
+    "steps": [
+      {
+        "send": { "text": "/checkname test@123" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Invalid counter name \"test@123\". Use only letters, numbers, and underscores." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/checkname trims whitespace on invalid name",
+    "steps": [
+      {
+        "send": { "text": "/checkname  hello world  " },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Invalid counter name \"hello world\". Use only letters, numbers, and underscores." } }
+        ]
+      }
+    ]
+  }
+]
