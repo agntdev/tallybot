@@ -1,0 +1,35 @@
+[
+  {
+    "name": "/new creates a counter (limit-enforced path)",
+    "steps": [
+      {
+        "send": { "text": "/new e2t3_test" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Counter \"e2t3_test\" created with value 0." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/new without name shows usage",
+    "steps": [
+      {
+        "send": { "text": "/new" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Usage: /new <name>\n\nCreate a counter with value 0. Name must be 1-50 characters, starting with a letter or digit, using only letters, digits, hyphens, and underscores." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/new rejects invalid name",
+    "steps": [
+      {
+        "send": { "text": "/new bad name" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Invalid counter name. Use 1-50 characters starting with a letter or digit: letters, digits, hyphens, and underscores only." } }
+        ]
+      }
+    ]
+  }
+]
