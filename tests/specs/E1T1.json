@@ -1,0 +1,52 @@
+[
+  {
+    "name": "/new creates a counter",
+    "steps": [
+      {
+        "send": { "text": "/new test1" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Counter \"test1\" created with value 0." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/new rejects duplicate counter name",
+    "steps": [
+      {
+        "send": { "text": "/new test2" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Counter \"test2\" created with value 0." } }
+        ]
+      },
+      {
+        "send": { "text": "/new test2" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Counter \"test2\" already exists." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/new without a name shows usage",
+    "steps": [
+      {
+        "send": { "text": "/new" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Usage: /new <name>\n\nCreate a counter with value 0. Name must be 1-50 characters, starting with a letter or digit, using only letters, digits, hyphens, and underscores." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/new rejects invalid name",
+    "steps": [
+      {
+        "send": { "text": "/new bad name" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Invalid counter name. Use 1-50 characters starting with a letter or digit: letters, digits, hyphens, and underscores only." } }
+        ]
+      }
+    ]
+  }
+]
