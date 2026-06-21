@@ -4,6 +4,7 @@ import type { Ctx } from "../bot.js";
 
 interface RedisHashOps {
   hset(key: string, field: string, value: string): Promise<number>;
+  hexists(key: string, field: string): Promise<number>;
 }
 
 const REDIS_URL = process.env.REDIS_URL;
@@ -39,6 +40,8 @@ async function resetCounter(userId: number, name: string): Promise<void> {
   const r = redis();
   if (!r) throw new Error("Redis not configured");
   const k = counterKey(userId);
+  const exists = await r.hexists(k, name);
+  if (exists === 0) throw new Error("Counter not found.");
   await r.hset(k, name, "0");
 }
 
@@ -63,8 +66,12 @@ composer.command("reset", async (ctx) => {
   try {
     await resetCounter(userId, name);
     await ctx.reply(`Counter "${name}" reset to 0.`);
-  } catch {
-    await ctx.reply("Tally service is unavailable. Set REDIS_URL to enable counters.");
+  } catch (err) {
+    if (err instanceof Error && err.message === "Counter not found.") {
+      await ctx.reply("Counter not found.");
+    } else {
+      await ctx.reply("Tally service is unavailable. Set REDIS_URL to enable counters.");
+    }
   }
 });
 
