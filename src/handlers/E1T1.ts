@@ -1,8 +1,6 @@
 import { Composer } from "grammy";
 import type { Ctx } from "../bot.js";
-import { counterStore, type Counter } from "../counter-store.js";
-
-const VALID_NAME_RE = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,49}$/;
+import { counterStore, isValidCounterName, type Counter } from "../counter-store.js";
 
 const composer = new Composer<Ctx>();
 
@@ -14,7 +12,7 @@ composer.command("new", async (ctx) => {
     return;
   }
 
-  if (!VALID_NAME_RE.test(raw)) {
+  if (!isValidCounterName(raw)) {
     await ctx.reply("Invalid counter name. Use 1-50 characters starting with a letter or digit: letters, digits, hyphens, and underscores only.");
     return;
   }
