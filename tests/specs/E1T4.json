@@ -11,12 +11,12 @@
     ]
   },
   {
-    "name": "/reset with a name but no Redis shows unavailable",
+    "name": "/reset with an unknown counter shows error",
     "steps": [
       {
         "send": { "text": "/reset testcounter" },
         "expect": [
-          { "method": "sendMessage", "payload": { "text": "Tally service is unavailable. Set REDIS_URL to enable counters." } }
+          { "method": "sendMessage", "payload": { "text": "Counter \"testcounter\" does not exist." } }
         ]
       }
     ]
