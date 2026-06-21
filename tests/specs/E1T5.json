@@ -1,0 +1,42 @@
+[
+  {
+    "name": "/list when no counters exist shows empty message",
+    "steps": [
+      {
+        "send": { "text": "/list" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "No counters found." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/list shows counters in alphabetical order",
+    "steps": [
+      {
+        "send": { "text": "/new beta" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Counter \"beta\" created with value 0." } }
+        ]
+      },
+      {
+        "send": { "text": "/new gamma" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Counter \"gamma\" created with value 0." } }
+        ]
+      },
+      {
+        "send": { "text": "/new alpha" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Counter \"alpha\" created with value 0." } }
+        ]
+      },
+      {
+        "send": { "text": "/list" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "alpha: 0\nbeta: 0\ngamma: 0" } }
+        ]
+      }
+    ]
+  }
+]

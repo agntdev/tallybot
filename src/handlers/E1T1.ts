@@ -1,15 +1,8 @@
 import { Composer } from "grammy";
 import type { Ctx } from "../bot.js";
-import { resolveSessionStorage } from "../toolkit/index.js";
-
-interface Counter {
-  name: string;
-  value: number;
-}
+import { counterStore, type Counter } from "../counter-store.js";
 
 const VALID_NAME_RE = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,49}$/;
-
-const counterStore = resolveSessionStorage<Counter>(undefined, process.env);
 
 const composer = new Composer<Ctx>();
 
