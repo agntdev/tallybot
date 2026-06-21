@@ -1,0 +1,34 @@
+[
+  {
+    "name": "/start sends welcome and main menu with routing",
+    "steps": [
+      {
+        "send": { "text": "/start" },
+        "expect": [
+          {
+            "method": "sendMessage",
+            "payload": {
+              "text": "Welcome! I am ready to help.",
+              "reply_markup": {
+                "inline_keyboard": [
+                  [{ "text": "\uD83D\uDCCB Help", "callback_data": "menu:help" }]
+                ]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "send": { "callback": "menu:help" },
+        "expect": [
+          {
+            "method": "sendMessage",
+            "payload": {
+              "text": "Available commands:\n/start - Start the bot\n/help - Show this help message"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]
