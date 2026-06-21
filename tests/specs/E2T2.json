@@ -1,0 +1,46 @@
+[
+  {
+    "name": "/aincr without args shows usage",
+    "steps": [
+      {
+        "send": { "text": "/aincr" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Usage: /aincr <key> [amount]\n\nAtomically increment a counter using Redis HINCRBY. Amount defaults to 1." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/areset without args shows usage",
+    "steps": [
+      {
+        "send": { "text": "/areset" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Usage: /areset <key> [value]\n\nAtomically reset a counter using Redis HSET. Value defaults to 0." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/aincr with key but no Redis responds with error",
+    "steps": [
+      {
+        "send": { "text": "/aincr mykey" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Redis is not configured. Set REDIS_URL to enable atomic counters." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/areset with key but no Redis responds with error",
+    "steps": [
+      {
+        "send": { "text": "/areset mykey" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Redis is not configured. Set REDIS_URL to enable atomic counters." } }
+        ]
+      }
+    ]
+  }
+]
