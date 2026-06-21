@@ -1,0 +1,112 @@
+[
+  {
+    "name": "/checkinc without value shows usage",
+    "steps": [
+      {
+        "send": { "text": "/checkinc" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Usage: /checkinc <value>\n\nValidates whether the value is a signed integer within 64-bit range [-9223372036854775808, 9223372036854775807]." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/checkinc with a valid positive integer",
+    "steps": [
+      {
+        "send": { "text": "/checkinc 42" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "\"42\" is a valid int64 increment." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/checkinc with a valid negative integer",
+    "steps": [
+      {
+        "send": { "text": "/checkinc -100" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "\"-100\" is a valid int64 increment." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/checkinc with zero",
+    "steps": [
+      {
+        "send": { "text": "/checkinc 0" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "\"0\" is a valid int64 increment." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/checkinc with max int64 value",
+    "steps": [
+      {
+        "send": { "text": "/checkinc 9223372036854775807" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "\"9223372036854775807\" is a valid int64 increment." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/checkinc with min int64 value",
+    "steps": [
+      {
+        "send": { "text": "/checkinc -9223372036854775808" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "\"-9223372036854775808\" is a valid int64 increment." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/checkinc with value exceeding int64 max",
+    "steps": [
+      {
+        "send": { "text": "/checkinc 9223372036854775808" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "\"9223372036854775808\" is out of range. Must be within [-9223372036854775808, 9223372036854775807]." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/checkinc with value below int64 min",
+    "steps": [
+      {
+        "send": { "text": "/checkinc -9223372036854775809" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "\"-9223372036854775809\" is out of range. Must be within [-9223372036854775808, 9223372036854775807]." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/checkinc with non-integer string",
+    "steps": [
+      {
+        "send": { "text": "/checkinc abc" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "\"abc\" is not a valid signed integer." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/checkinc with a float value",
+    "steps": [
+      {
+        "send": { "text": "/checkinc 3.14" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "\"3.14\" is not a valid signed integer." } }
+        ]
+      }
+    ]
+  }
+]
