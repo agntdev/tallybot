@@ -1,0 +1,24 @@
+[
+  {
+    "name": "/reset without a name shows usage",
+    "steps": [
+      {
+        "send": { "text": "/reset" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Usage: /reset <name>" } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/reset with a name but no Redis shows unavailable",
+    "steps": [
+      {
+        "send": { "text": "/reset testcounter" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Tally service is unavailable. Set REDIS_URL to enable counters." } }
+        ]
+      }
+    ]
+  }
+]
