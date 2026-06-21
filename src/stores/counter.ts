@@ -1,5 +1,5 @@
 import type { StorageAdapter } from "grammy";
-import { resolveSessionStorage } from "../toolkit/index.js";
+import { resolveSessionStorage, RedisSessionStorage } from "../toolkit/index.js";
 
 interface CounterEntry {
   value: number;
@@ -135,14 +135,50 @@ export async function countUserCounters(userId: number): Promise<number> {
 export async function createUserCounter(name: string, userId: number): Promise<CounterResult> {
   if (!name) return { ok: false, error: "Usage: /new <name>" };
   if (!isValidName(name)) return { ok: false, error: "Invalid counter name. Use only letters, numbers, and underscores." };
+  const s = storage();
+  const k = userCounterKey(userId, name);
+  const prefix = userCountersPrefix(userId);
+  const existing = await s.read(k);
+  if (existing !== undefined) return { ok: false, error: `Counter '${name}' already exists.` };
+  if (s instanceof RedisSessionStorage) {
+    const redis = s as RedisSessionStorage<CounterEntry>;
+    const luaResult = await redis.evalScript(
+      CREATE_USER_COUNTER_LUA,
+      [k, prefix],
+      [String(MAX_COUNTERS_PER_USER), JSON.stringify({ value: 0 })],
+    );
+    if (luaResult === -1) {
+      return { ok: false, error: `Counter '${name}' already exists.` };
+    }
+    if (luaResult === -2) {
+      const count = await countUserCounters(userId);
+      return { ok: false, error: `Counter limit reached. You have ${count} counters (maximum ${MAX_COUNTERS_PER_USER}).` };
+    }
+    return { ok: true, value: 0 };
+  }
   const existingCount = await countUserCounters(userId);
   if (existingCount >= MAX_COUNTERS_PER_USER) {
     return { ok: false, error: `Counter limit reached. You have ${existingCount} counters (maximum ${MAX_COUNTERS_PER_USER}).` };
   }
-  const s = storage();
-  const k = userCounterKey(userId, name);
-  const existing = await s.read(k);
-  if (existing !== undefined) return { ok: false, error: `Counter '${name}' already exists.` };
   await s.write(k, { value: 0 });
   return { ok: true, value: 0 };
 }
+
+const CREATE_USER_COUNTER_LUA = `
+local key = KEYS[1]
+local prefix = KEYS[2]
+local max = tonumber(ARGV[1])
+local value = ARGV[2]
+
+if redis.call('EXISTS', key) == 1 then
+    return -1
+end
+
+local keys = redis.call('KEYS', prefix .. '*')
+if #keys >= max then
+    return -2
+end
+
+redis.call('SET', key, value)
+return 0
+`;

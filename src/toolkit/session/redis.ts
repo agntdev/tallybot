@@ -20,6 +20,7 @@ export interface RedisLike {
   set(key: string, value: string): Promise<unknown>;
   del(key: string): Promise<unknown>;
   keys(pattern: string): Promise<string[]>;
+  eval(script: string, numKeys: number, ...keysAndArgs: string[]): Promise<unknown>;
 }
 
 /**
@@ -63,6 +64,11 @@ export class RedisSessionStorage<T> implements StorageAdapter<T> {
   async *readAllKeys(): AsyncIterableIterator<string> {
     const keys = await this.client.keys(this.prefix + "*");
     for (const k of keys) yield k.slice(this.prefix.length);
+  }
+
+  async evalScript(script: string, keys: string[], args: string[]): Promise<number> {
+    const prefixedKeys = keys.map((k) => this.k(k));
+    return this.client.eval(script, prefixedKeys.length, ...prefixedKeys, ...args) as Promise<number>;
   }
 }
 
