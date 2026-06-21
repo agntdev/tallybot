@@ -1,0 +1,24 @@
+[
+  {
+    "name": "/get without name shows usage",
+    "steps": [
+      {
+        "send": { "text": "/get" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Usage: /get <name>" } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/get with non-existent counter shows error",
+    "steps": [
+      {
+        "send": { "text": "/get nosuch" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Counter 'nosuch' not found." } }
+        ]
+      }
+    ]
+  }
+]
