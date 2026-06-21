@@ -19,7 +19,7 @@ function storage(): StorageAdapter<CounterEntry> {
 }
 
 function isValidName(name: string): boolean {
-  return /^[a-zA-Z0-9_-]+$/.test(name.trim());
+  return /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,49}$/.test(name.trim());
 }
 
 function key(name: string): string {
