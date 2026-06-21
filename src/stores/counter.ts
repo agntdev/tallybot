@@ -7,6 +7,8 @@ interface CounterEntry {
 
 const COUNTER_PREFIX = "counter:";
 
+export const MAX_COUNTERS_PER_USER = 1000;
+
 let _storage: StorageAdapter<CounterEntry> | null = null;
 
 function storage(): StorageAdapter<CounterEntry> {
@@ -22,6 +24,14 @@ function isValidName(name: string): boolean {
 
 function key(name: string): string {
   return COUNTER_PREFIX + name;
+}
+
+function userCounterKey(userId: number, name: string): string {
+  return `${COUNTER_PREFIX}${userId}:${name}`;
+}
+
+function userCountersPrefix(userId: number): string {
+  return `${COUNTER_PREFIX}${userId}:`;
 }
 
 export interface CounterResult {
@@ -96,4 +106,37 @@ export async function listCounters(): Promise<{ ok: true; counters: Array<{ name
   }
   entries.sort((a, b) => a.name.localeCompare(b.name));
   return { ok: true, counters: entries };
+}
+
+export async function countUserCounters(userId: number): Promise<number> {
+  const s = storage();
+  const prefix = userCountersPrefix(userId);
+  let count = 0;
+  if (s.readAllKeys) {
+    const keys = s.readAllKeys();
+    const keyList = Symbol.asyncIterator in Object(keys)
+      ? keys as AsyncIterableIterator<string>
+      : keys as IterableIterator<string>;
+    for await (const k of keyList) {
+      if (k.startsWith(prefix)) {
+        count++;
+      }
+    }
+  }
+  return count;
+}
+
+export async function createUserCounter(name: string, userId: number): Promise<CounterResult> {
+  if (!name) return { ok: false, error: "Usage: /new <name>" };
+  if (!isValidName(name)) return { ok: false, error: "Invalid counter name. Use only letters, numbers, and underscores." };
+  const existingCount = await countUserCounters(userId);
+  if (existingCount >= MAX_COUNTERS_PER_USER) {
+    return { ok: false, error: `Counter limit reached. You have ${existingCount} counters (maximum ${MAX_COUNTERS_PER_USER}).` };
+  }
+  const s = storage();
+  const k = userCounterKey(userId, name);
+  const existing = await s.read(k);
+  if (existing !== undefined) return { ok: false, error: `Counter '${name}' already exists.` };
+  await s.write(k, { value: 0 });
+  return { ok: true, value: 0 };
 }
