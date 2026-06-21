@@ -17,3 +17,14 @@ export function isValidCounterName(name: string): boolean {
 }
 
 export const counterStore = resolveSessionStorage<Counter>(undefined, process.env) as CounterStore;
+
+export async function resetCounterStore(): Promise<void> {
+  const keys = counterStore.readAllKeys();
+  if (Array.isArray(keys)) {
+    for (const k of keys) await counterStore.delete(k);
+  } else {
+    const collected: string[] = [];
+    for await (const k of keys) collected.push(k);
+    for (const k of collected) await counterStore.delete(k);
+  }
+}
