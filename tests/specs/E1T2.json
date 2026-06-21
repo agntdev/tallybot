@@ -14,6 +14,12 @@
     "name": "/inc with just a name increments by 1",
     "steps": [
       {
+        "send": { "text": "/new visitors" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Counter \"visitors\" created with value 0." } }
+        ]
+      },
+      {
         "send": { "text": "/inc visitors" },
         "expect": [
           { "method": "sendMessage", "payload": { "text": "Counter 'visitors' is now 1" } }
@@ -25,6 +31,12 @@
     "name": "/inc with explicit delta",
     "steps": [
       {
+        "send": { "text": "/new bugs" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Counter \"bugs\" created with value 0." } }
+        ]
+      },
+      {
         "send": { "text": "/inc bugs 10" },
         "expect": [
           { "method": "sendMessage", "payload": { "text": "Counter 'bugs' is now 10" } }
@@ -35,6 +47,12 @@
   {
     "name": "/inc increments sequentially",
     "steps": [
+      {
+        "send": { "text": "/new tasks" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Counter \"tasks\" created with value 0." } }
+        ]
+      },
       {
         "send": { "text": "/inc tasks" },
         "expect": [
@@ -89,6 +107,17 @@
         "send": { "text": "/inc x 0" },
         "expect": [
           { "method": "sendMessage", "payload": { "text": "Invalid increment value. Must be a positive integer." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/inc rejects missing counter",
+    "steps": [
+      {
+        "send": { "text": "/inc notexists" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Counter 'notexists' not found." } }
         ]
       }
     ]
