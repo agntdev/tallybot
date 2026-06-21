@@ -1,0 +1,96 @@
+[
+  {
+    "name": "/inc without a name shows usage",
+    "steps": [
+      {
+        "send": { "text": "/inc" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Usage: /inc <name> [n]" } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/inc with just a name increments by 1",
+    "steps": [
+      {
+        "send": { "text": "/inc visitors" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Counter 'visitors' is now 1" } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/inc with explicit delta",
+    "steps": [
+      {
+        "send": { "text": "/inc bugs 10" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Counter 'bugs' is now 10" } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/inc increments sequentially",
+    "steps": [
+      {
+        "send": { "text": "/inc tasks" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Counter 'tasks' is now 1" } }
+        ]
+      },
+      {
+        "send": { "text": "/inc tasks 3" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Counter 'tasks' is now 4" } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/inc rejects invalid counter name",
+    "steps": [
+      {
+        "send": { "text": "/inc bad@name" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Invalid counter name. Use letters, numbers, hyphens, and underscores." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/inc rejects non-numeric delta",
+    "steps": [
+      {
+        "send": { "text": "/inc x abc" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Invalid increment value. Must be a positive integer." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/inc rejects negative delta",
+    "steps": [
+      {
+        "send": { "text": "/inc x -1" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Invalid increment value. Must be a positive integer." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/inc rejects zero delta",
+    "steps": [
+      {
+        "send": { "text": "/inc x 0" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Invalid increment value. Must be a positive integer." } }
+        ]
+      }
+    ]
+  }
+]
