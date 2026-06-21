@@ -1,0 +1,13 @@
+[
+  {
+    "name": "/tally responds when Redis is not configured",
+    "steps": [
+      {
+        "send": { "text": "/tally" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Tally service is unavailable. Set REDIS_URL to enable counters." } }
+        ]
+      }
+    ]
+  }
+]
