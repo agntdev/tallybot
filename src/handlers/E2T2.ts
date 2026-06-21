@@ -1,42 +1,19 @@
 import { Composer } from "grammy";
-import { createRequire } from "node:module";
 import type { Ctx } from "../bot.js";
+import { resolveSessionStorage } from "../toolkit/index.js";
 
-interface RedisHashOps {
-  hincrby(key: string, field: string, increment: number): Promise<number>;
-  hset(key: string, field: string, value: string): Promise<number>;
-}
-
-const REDIS_URL = process.env.REDIS_URL;
-
-let _redis: RedisHashOps | null | undefined;
-
-function redis(): RedisHashOps | null {
-  if (_redis === undefined) {
-    if (!REDIS_URL) {
-      _redis = null;
-      return null;
-    }
-    try {
-      const require = createRequire(import.meta.url);
-      const ioredis: unknown = require("ioredis");
-      const Redis =
-        (ioredis as { default?: new (url: string, opts: object) => RedisHashOps }).default ??
-        (ioredis as { Redis?: new (url: string, opts: object) => RedisHashOps }).Redis ??
-        (ioredis as new (url: string, opts: object) => RedisHashOps);
-      _redis = new Redis(REDIS_URL, { maxRetriesPerRequest: null, lazyConnect: false });
-    } catch {
-      _redis = null;
-    }
-  }
-  return _redis;
+interface CounterData {
+  value: number;
 }
 
 function counterKey(key: string): string {
   return `e2t2:${key}`;
 }
 
-const FIELD = "value";
+function getStorage() {
+  if (!process.env.REDIS_URL) return null;
+  return resolveSessionStorage<CounterData>(undefined);
+}
 
 const composer = new Composer<Ctx>();
 
@@ -59,18 +36,20 @@ composer.command("aincr", async (ctx) => {
     return;
   }
 
-  const r = redis();
-  if (!r) {
+  const storage = getStorage();
+  if (!storage) {
     await ctx.reply("Redis is not configured. Set REDIS_URL to enable atomic counters.");
     return;
   }
 
-  try {
-    const val = await r.hincrby(counterKey(key), FIELD, amount);
-    await ctx.reply(`Counter "${key}" incremented by ${amount}. Current value: ${val}`);
-  } catch {
-    await ctx.reply("Failed to increment counter.");
+  const k = counterKey(key);
+  let data = await storage.read(k);
+  if (data === undefined) {
+    data = { value: 0 };
   }
+  data.value += amount;
+  await storage.write(k, data);
+  await ctx.reply(`Counter "${key}" incremented by ${amount}. Current value: ${data.value}`);
 });
 
 composer.command("areset", async (ctx) => {
@@ -92,18 +71,15 @@ composer.command("areset", async (ctx) => {
     return;
   }
 
-  const r = redis();
-  if (!r) {
+  const storage = getStorage();
+  if (!storage) {
     await ctx.reply("Redis is not configured. Set REDIS_URL to enable atomic counters.");
     return;
   }
 
-  try {
-    await r.hset(counterKey(key), FIELD, String(value));
-    await ctx.reply(`Counter "${key}" reset to ${value}.`);
-  } catch {
-    await ctx.reply("Failed to reset counter.");
-  }
+  const k = counterKey(key);
+  await storage.write(k, { value });
+  await ctx.reply(`Counter "${key}" reset to ${value}.`);
 });
 
 export default composer;
