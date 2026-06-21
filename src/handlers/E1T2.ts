@@ -38,7 +38,11 @@ composer.command("inc", async (ctx) => {
 
   const key = COUNTER_PREFIX + name;
   const existing = await counterStore.read(key);
-  const newValue = (existing?.value ?? 0) + delta;
+  if (existing === undefined) {
+    await ctx.reply(`Counter '${name}' not found.`);
+    return;
+  }
+  const newValue = existing.value + delta;
   await counterStore.write(key, { name, value: newValue });
 
   await ctx.reply(`Counter '${name}' is now ${newValue}`);
