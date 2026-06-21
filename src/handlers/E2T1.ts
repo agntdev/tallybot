@@ -1,58 +1,20 @@
 import { Composer } from "grammy";
-import { createRequire } from "node:module";
 import type { Ctx } from "../bot.js";
+import { resolveSessionStorage } from "../toolkit/index.js";
 
-interface RedisHashOps {
-  hsetnx(key: string, field: string, value: string): Promise<number>;
-  hincrby(key: string, field: string, increment: number): Promise<number>;
+interface CounterData {
+  default: number;
 }
 
-const REDIS_URL = process.env.REDIS_URL;
-
-let _redis: RedisHashOps | null | undefined;
-
-function redis(): RedisHashOps | null {
-  if (_redis === undefined) {
-    if (!REDIS_URL) {
-      _redis = null;
-      return null;
-    }
-    try {
-      const require = createRequire(import.meta.url);
-      const ioredis: unknown = require("ioredis");
-      const Redis =
-        (ioredis as { default?: new (url: string, opts: object) => RedisHashOps }).default ??
-        (ioredis as { Redis?: new (url: string, opts: object) => RedisHashOps }).Redis ??
-        (ioredis as new (url: string, opts: object) => RedisHashOps);
-      _redis = new Redis(REDIS_URL, { maxRetriesPerRequest: null, lazyConnect: false });
-    } catch {
-      _redis = null;
-    }
-  }
-  return _redis;
-}
+const COUNTER_FIELD = "default";
 
 function counterKey(userId: number): string {
   return `tallybot:${userId}:counters`;
 }
 
-const COUNTER_FIELD = "default";
-
-export async function incrementCounter(userId: number): Promise<number> {
-  const r = redis();
-  if (!r) throw new Error("Redis not configured");
-  const k = counterKey(userId);
-  await r.hsetnx(k, COUNTER_FIELD, "0");
-  return r.hincrby(k, COUNTER_FIELD, 1);
-}
-
-export async function getCounter(userId: number): Promise<number> {
-  const r = redis();
-  if (!r) throw new Error("Redis not configured");
-  const k = counterKey(userId);
-  await r.hsetnx(k, COUNTER_FIELD, "0");
-  const val = await r.hincrby(k, COUNTER_FIELD, 0);
-  return val;
+function getStorage() {
+  if (!process.env.REDIS_URL) return null;
+  return resolveSessionStorage<CounterData>(undefined);
 }
 
 const composer = new Composer<Ctx>();
@@ -63,12 +25,21 @@ composer.command("tally", async (ctx) => {
     await ctx.reply("Could not determine your user ID.");
     return;
   }
-  try {
-    const count = await incrementCounter(userId);
-    await ctx.reply(`Your tally: ${count}`);
-  } catch {
+
+  const storage = getStorage();
+  if (!storage) {
     await ctx.reply("Tally service is unavailable. Set REDIS_URL to enable counters.");
+    return;
   }
+
+  const k = counterKey(userId);
+  let data = await storage.read(k);
+  if (data === undefined) {
+    data = { default: 0 };
+  }
+  data.default += 1;
+  await storage.write(k, data);
+  await ctx.reply(`Your tally: ${data.default}`);
 });
 
 export default composer;
