@@ -1,9 +1,6 @@
 import { Composer } from "grammy";
 import type { Ctx } from "../bot.js";
-import { resolveSessionStorage } from "../toolkit/index.js";
-
-const COUNTERS_KEY = "inc:counters";
-const storage = resolveSessionStorage<Record<string, number>>(undefined);
+import { counterStore } from "../counter-store.js";
 
 const NAME_RE = /^[a-zA-Z0-9_-]+$/;
 
@@ -38,11 +35,16 @@ composer.command("inc", async (ctx) => {
     delta = parsed;
   }
 
-  const counters = (await storage.read(COUNTERS_KEY)) ?? {};
-  counters[name] = (counters[name] ?? 0) + delta;
-  await storage.write(COUNTERS_KEY, counters);
+  const key = `counter:${name}`;
+  const existing = await counterStore.read(key);
+  if (existing === undefined) {
+    await ctx.reply(`Counter '${name}' not found.`);
+    return;
+  }
+  existing.value += delta;
+  await counterStore.write(key, existing);
 
-  await ctx.reply(`Counter '${name}' is now ${counters[name]}`);
+  await ctx.reply(`Counter '${name}' is now ${existing.value}`);
 });
 
 export default composer;
