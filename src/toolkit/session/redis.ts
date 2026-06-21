@@ -20,6 +20,7 @@ export interface RedisLike {
   set(key: string, value: string): Promise<unknown>;
   del(key: string): Promise<unknown>;
   keys(pattern: string): Promise<string[]>;
+  eval(script: string, numKeys: number, ...keysAndArgs: string[]): Promise<unknown>;
 }
 
 /**
@@ -29,12 +30,16 @@ export interface RedisLike {
  */
 export class RedisSessionStorage<T> implements StorageAdapter<T> {
   constructor(
-    private readonly client: RedisLike,
+    public readonly client: RedisLike,
     private readonly prefix = "sess:",
   ) {}
 
   private k(key: string): string {
     return this.prefix + key;
+  }
+
+  resolveKey(key: string): string {
+    return this.k(key);
   }
 
   async read(key: string): Promise<T | undefined> {

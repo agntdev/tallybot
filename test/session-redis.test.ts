@@ -25,6 +25,10 @@ function fakeClient(): RedisLike & { store: Map<string, string> } {
       const prefix = pattern.replace(/\*$/, "");
       return [...store.keys()].filter((k) => k.startsWith(prefix));
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async eval(_script: string, _numKeys: number, ..._keysAndArgs: string[]): Promise<any> {
+      throw new Error("eval not implemented in fake client");
+    },
   };
 }
 
